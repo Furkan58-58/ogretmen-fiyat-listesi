@@ -3,6 +3,7 @@ const $ = (selector) => document.querySelector(selector);
 const money = (value) => new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(value);
 const norm = (value) => (value || "").toLocaleLowerCase("tr-TR");
 const gradeOrder = ["9. Sınıf", "10. Sınıf", "11. Sınıf", "12. Sınıf", "Maarif TYT"];
+const courseOrder = ["Matematik", "Geometri", "Türk Dili ve Edebiyatı", "Tarih", "Coğrafya", "Felsefe", "Din Kültürü", "Türkçe", "Sosyal Bilimler", "Tüm Dersler"];
 let cameraStream = null;
 let scanTimer = null;
 
@@ -16,7 +17,11 @@ function productCard(product) {
 }
 
 function renderCourses() {
-  const courses = [...new Set(state.all.map((x) => x.course).filter(Boolean))].sort((a, b) => a.localeCompare(b, "tr"));
+  const courses = [...new Set(state.all.map((x) => x.course).filter(Boolean))].sort((a, b) => {
+    const ai = courseOrder.indexOf(a), bi = courseOrder.indexOf(b);
+    if (ai >= 0 || bi >= 0) return (ai < 0 ? 999 : ai) - (bi < 0 ? 999 : bi);
+    return a.localeCompare(b, "tr");
+  });
   if (!state.course) state.course = courses[0] || "";
   $("#courses").innerHTML = courses.map((course) => `<button class="grade-tab ${course === state.course ? "active" : ""}" data-course="${course}">${course}<small>${state.all.filter((x) => x.course === course).length} kitap</small></button>`).join("");
   $("#courses").querySelectorAll("button").forEach((button) => button.onclick = () => {
