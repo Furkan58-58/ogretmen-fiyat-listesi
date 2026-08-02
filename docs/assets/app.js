@@ -1,6 +1,131 @@
-const state={all:[],shown:[],course:''};const $=s=>document.querySelector(s);const money=n=>new Intl.NumberFormat('tr-TR',{style:'currency',currency:'TRY'}).format(n);const norm=s=>(s||'').toLocaleLowerCase('tr-TR');const gradeOrder=['9. Sınıf','10. Sınıf','11. Sınıf','12. Sınıf','Maarif TYT'];
-const showPrice=v=>v==null?'—':money(v);function productCard(x){const name=x.promo?`<a class="book-link" href="${x.promo}" target="_blank" rel="noopener">${x.bookName}</a>`:`<span>${x.bookName}</span>`;return `<article class="card"><div><div class="publisher">${name}</div><div class="meta">Barkod: ${x.barcode}</div></div><div><span class="tag">${x.type||'Kitap'}</span></div><div class="prices"><div><span>Fiyat</span><strong>${showPrice(x.price)}</strong></div><div><span>İnd</span><strong>${showPrice(x.discountPrice)}</strong></div><div><span>Toplu</span><strong>${showPrice(x.bulkPrice)}</strong></div></div></article>`}
-function renderCourses(){const courses=[...new Set(state.all.map(x=>x.course).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'tr'));if(!state.course)state.course=courses[0]||'';$('#courses').innerHTML=courses.map(c=>`<button class="grade-tab ${c===state.course?'active':''}" data-course="${c}">${c}<small>${state.all.filter(x=>x.course===c).length} kitap</small></button>`).join('');$('#courses').querySelectorAll('button').forEach(b=>b.onclick=()=>{state.course=b.dataset.course;renderCourses();render();document.querySelector('.result-head').scrollIntoView({behavior:'smooth',block:'start'})})}
-function render(){const q=norm($('#q').value),p=$('#publisher').value;state.shown=state.all.filter(x=>x.course===state.course&&(!q||norm([x.publisher,x.grade,x.category,x.type,x.barcode].join(' ')).includes(q))&&(!p||x.publisher===p));$('#count').textContent=`${state.course} • ${state.shown.length} ürün`;$('#empty').hidden=state.shown.length>0;const groups={};state.shown.forEach(x=>(groups[x.grade||'Diğer']??=[]).push(x));$('#list').innerHTML=Object.entries(groups).sort((a,b)=>(gradeOrder.indexOf(a[0])<0?99:gradeOrder.indexOf(a[0]))-(gradeOrder.indexOf(b[0])<0?99:gradeOrder.indexOf(b[0]))).map(([grade,items])=>`<details class="course-group" open><summary><span>${grade}</span><span class="course-count">${items.length} kitap</span></summary><div class="course-cards">${items.map(productCard).join('')}</div></details>`).join('')}
-async function start(){const data=await fetch('data/products.json').then(r=>r.json());state.all=data.products;if(data.theme){document.documentElement.style.setProperty('--navy',data.theme.mainColor);document.documentElement.style.setProperty('--gold',data.theme.accentColor);$('#site-title').textContent=data.theme.title;$('#site-subtitle').textContent=data.theme.subtitle;document.title=data.theme.title}$('#updated').textContent=`${data.count} ürün • Son güncelleme: ${data.updated}`;[...new Set(state.all.map(x=>x.publisher).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'tr')).forEach(v=>$('#publisher').add(new Option(v,v)));if(location.hostname.endsWith('github.io')){const owner=location.hostname.split('.')[0],repo=location.pathname.split('/').filter(Boolean)[0];if(repo){$('#github').href=`https://github.com/${owner}/${repo}`;$('#github').hidden=false}}renderCourses();render()}
-['#q','#publisher'].forEach(id=>$(id).addEventListener(id==='#q'?'input':'change',render));$('#clear').onclick=()=>{$('#q').value='';$('#publisher').value='';render()};$('#share').onclick=async()=>{const data={title:document.title,text:'Güncel öğretmen kitap fiyat listesi',url:location.href};if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(location.href);$('#share').textContent='Link kopyalandı'}};start().catch(()=>{$('#updated').textContent='Liste yüklenemedi. Lütfen sayfayı yenileyin.'});
+const state = { all: [], shown: [], course: "", kind: "" };
+const $ = (selector) => document.querySelector(selector);
+const money = (value) => new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(value);
+const norm = (value) => (value || "").toLocaleLowerCase("tr-TR");
+const gradeOrder = ["9. Sınıf", "10. Sınıf", "11. Sınıf", "12. Sınıf", "Maarif TYT"];
+let cameraStream = null;
+let scanTimer = null;
+
+const showPrice = (value) => value == null ? "—" : money(value);
+
+function productCard(product) {
+  const name = product.promo
+    ? `<a class="book-link" href="${product.promo}" target="_blank" rel="noopener">${product.bookName}</a>`
+    : `<span>${product.bookName}</span>`;
+  return `<article class="card"><div><div class="publisher">${name}</div><div class="meta">Barkod: ${product.barcode}</div></div><div><span class="tag">${product.type || "Kitap"}</span></div><div class="prices"><div><span>Fiyat</span><strong>${showPrice(product.price)}</strong></div><div><span>İnd</span><strong>${showPrice(product.discountPrice)}</strong></div><div><span>Toplu</span><strong>${showPrice(product.bulkPrice)}</strong></div></div></article>`;
+}
+
+function renderCourses() {
+  const courses = [...new Set(state.all.map((x) => x.course).filter(Boolean))].sort((a, b) => a.localeCompare(b, "tr"));
+  if (!state.course) state.course = courses[0] || "";
+  $("#courses").innerHTML = courses.map((course) => `<button class="grade-tab ${course === state.course ? "active" : ""}" data-course="${course}">${course}<small>${state.all.filter((x) => x.course === course).length} kitap</small></button>`).join("");
+  $("#courses").querySelectorAll("button").forEach((button) => button.onclick = () => {
+    state.course = button.dataset.course;
+    state.kind = "";
+    renderCourses();
+    renderTypes();
+    render();
+    document.querySelector(".type-section").scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+}
+
+function renderTypes() {
+  const items = state.all.filter((x) => x.course === state.course);
+  const types = [...new Set(items.map((x) => x.type || "Diğer"))].sort((a, b) => a.localeCompare(b, "tr"));
+  $("#types").innerHTML = [`<button class="type-tab ${state.kind === "" ? "active" : ""}" data-kind="">Tümü</button>`, ...types.map((type) => `<button class="type-tab ${type === state.kind ? "active" : ""}" data-kind="${type}">${type}<small> (${items.filter((x) => (x.type || "Diğer") === type).length})</small></button>`)].join("");
+  $("#types").querySelectorAll("button").forEach((button) => button.onclick = () => {
+    state.kind = button.dataset.kind;
+    renderTypes();
+    render();
+  });
+}
+
+function render() {
+  const query = norm($("#q").value);
+  const publisher = $("#publisher").value;
+  state.shown = state.all.filter((x) => x.course === state.course
+    && (!state.kind || (x.type || "Diğer") === state.kind)
+    && (!query || norm([x.publisher, x.grade, x.category, x.type, x.barcode].join(" ")).includes(query))
+    && (!publisher || x.publisher === publisher));
+  $("#count").textContent = `${state.course}${state.kind ? ` • ${state.kind}` : ""} • ${state.shown.length} ürün`;
+  $("#empty").hidden = state.shown.length > 0;
+  const groups = {};
+  state.shown.forEach((x) => (groups[x.grade || "Diğer"] ??= []).push(x));
+  $("#list").innerHTML = Object.entries(groups)
+    .sort((a, b) => (gradeOrder.indexOf(a[0]) < 0 ? 99 : gradeOrder.indexOf(a[0])) - (gradeOrder.indexOf(b[0]) < 0 ? 99 : gradeOrder.indexOf(b[0])))
+    .map(([grade, items]) => `<details class="course-group" open><summary><span>${grade}</span><span class="course-count">${items.length} kitap</span></summary><div class="course-cards">${items.map(productCard).join("")}</div></details>`).join("");
+}
+
+function stopScanner() {
+  if (scanTimer) clearTimeout(scanTimer);
+  scanTimer = null;
+  if (cameraStream) cameraStream.getTracks().forEach((track) => track.stop());
+  cameraStream = null;
+  $("#scanner-video").srcObject = null;
+  if ($("#scanner").open) $("#scanner").close();
+}
+
+async function scanFrame(detector) {
+  if (!cameraStream) return;
+  try {
+    const codes = await detector.detect($("#scanner-video"));
+    if (codes.length) {
+      const barcode = codes[0].rawValue;
+      $("#q").value = barcode;
+      state.course = state.all.find((x) => x.barcode === barcode)?.course || state.course;
+      state.kind = "";
+      stopScanner();
+      renderCourses();
+      renderTypes();
+      render();
+      document.querySelector(".result-head").scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+  } catch (_) {}
+  scanTimer = setTimeout(() => scanFrame(detector), 250);
+}
+
+async function openScanner() {
+  if (!("BarcodeDetector" in window) || !navigator.mediaDevices?.getUserMedia) {
+    const barcode = prompt("Bu tarayıcı kamerayla barkod okumayı desteklemiyor. Barkod numarasını yazabilirsiniz:");
+    if (barcode) { $("#q").value = barcode.trim(); render(); }
+    return;
+  }
+  $("#scanner").showModal();
+  $("#scanner-status").textContent = "Kamera hazırlanıyor…";
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
+    $("#scanner-video").srcObject = cameraStream;
+    await $("#scanner-video").play();
+    $("#scanner-status").textContent = "Barkod aranıyor…";
+    const detector = new BarcodeDetector({ formats: ["ean_13", "ean_8", "code_128"] });
+    scanFrame(detector);
+  } catch (_) {
+    $("#scanner-status").textContent = "Kamera açılamadı. Tarayıcı kamera iznini kontrol edin.";
+  }
+}
+
+async function start() {
+  const data = await fetch("data/products.json").then((response) => response.json());
+  state.all = data.products;
+  if (data.theme) {
+    document.documentElement.style.setProperty("--navy", data.theme.mainColor);
+    document.documentElement.style.setProperty("--gold", data.theme.accentColor);
+    $("#site-title").textContent = data.theme.title;
+    $("#site-subtitle").textContent = data.theme.subtitle;
+    document.title = data.theme.title;
+  }
+  $("#updated").textContent = `${data.count} ürün • Son güncelleme: ${data.updated}`;
+  [...new Set(state.all.map((x) => x.publisher).filter(Boolean))].sort((a, b) => a.localeCompare(b, "tr")).forEach((value) => $("#publisher").add(new Option(value, value)));
+  renderCourses();
+  renderTypes();
+  render();
+}
+
+["#q", "#publisher"].forEach((id) => $(id).addEventListener(id === "#q" ? "input" : "change", render));
+$("#clear").onclick = () => { $("#q").value = ""; $("#publisher").value = ""; state.kind = ""; renderTypes(); render(); };
+$("#share").onclick = async () => { const data = { title: document.title, text: "Güncel öğretmen kitap fiyat listesi", url: location.href }; if (navigator.share) await navigator.share(data); else { await navigator.clipboard.writeText(location.href); $("#share").textContent = "Link kopyalandı"; } };
+$("#scan").onclick = openScanner;
+$("#scanner-close").onclick = stopScanner;
+$("#scanner").addEventListener("cancel", (event) => { event.preventDefault(); stopScanner(); });
+start().catch(() => { $("#updated").textContent = "Liste yüklenemedi. Lütfen sayfayı yenileyin."; });
