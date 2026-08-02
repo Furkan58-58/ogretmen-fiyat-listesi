@@ -52,6 +52,10 @@ def barcode_list(*values):
     return result
 
 
+def is_yes(value):
+    return clean(value).casefold() in {"evet", "e", "yes", "1", "x", "var"}
+
+
 def anchor(text):
     base = re.sub(r"[^a-z0-9]+", "-", text.casefold().replace("ı", "i").replace("ş", "s").replace("ğ", "g").replace("ü", "u").replace("ö", "o").replace("ç", "c")).strip("-")
     return f"ders-{base}"
@@ -89,12 +93,17 @@ def load_data():
         if extra_barcodes is None and len(row) > 10:
             extra_barcodes = row[10]
         barcodes = barcode_list(get(row, "Barkod"), extra_barcodes)
+        no_discount_value = get(row, "İndirim Yapma")
+        if no_discount_value is None and len(row) > 11:
+            no_discount_value = row[11]
+        no_discount = is_yes(no_discount_value)
         products.append({
             "barcode": barcodes[0] if barcodes else "", "barcodes": barcodes, "publisher": publisher, "grade": grade,
             "course": course, "category": general, "type": kind, "bookName": book_name,
-            "price": price, "discountPrice": round(price * (1 - single_rate), 2) if price is not None and single_rate else None,
-            "bulkPrice": round(price * (1 - bulk_rate), 2) if price is not None and bulk_rate else None,
+            "price": price, "discountPrice": round(price * (1 - single_rate), 2) if not no_discount and price is not None and single_rate else None,
+            "bulkPrice": round(price * (1 - bulk_rate), 2) if not no_discount and price is not None and bulk_rate else None,
             "singleRate": single_rate, "bulkRate": bulk_rate, "promo": clean(get(row, "Tanıtım Linki")),
+            "noDiscount": no_discount,
         })
     return products, theme
 

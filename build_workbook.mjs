@@ -12,13 +12,13 @@ const sheet = workbook.worksheets.add("Ürünler");
 const discountSheet = workbook.worksheets.add("İndirimler");
 const designSheet = workbook.worksheets.add("Tasarım");
 sheet.showGridLines = false;
-const outputHeaders = ["Barkod", "Yayın", "Sınıf", "Ders", "Genel Tür", "Tür", "Fiyat", "İnd", "Toplu", "Tanıtım Linki", "Yeni Barkodlar"];
+const outputHeaders = ["Barkod", "Yayın", "Sınıf", "Ders", "Genel Tür", "Tür", "Fiyat", "İnd", "Toplu", "Tanıtım Linki", "Yeni Barkodlar", "İndirim Yapma"];
 const normalizeGrade = value => String(value ?? "").trim().toLocaleLowerCase("tr-TR") === "maarif tyt" ? "Maarif TYT" : value;
 const outputRows = values.slice(1).filter(row => row.some(v => v !== null && v !== "")).map(row => [
   String(row[col("Barkod")] ?? ""), row[col("Yayın")], normalizeGrade(row[col("Sınıf")]), row[col("Ders")],
-  row[col("Genel Tür")], row[col("Tür")], row[col("Fiyat")], null, null, row[col("Tanıtım Linki")], null,
+  row[col("Genel Tür")], row[col("Tür")], row[col("Fiyat")], null, null, row[col("Tanıtım Linki")], null, null,
 ]);
-sheet.getRange(`A1:K${outputRows.length + 1}`).values = [outputHeaders, ...outputRows];
+sheet.getRange(`A1:L${outputRows.length + 1}`).values = [outputHeaders, ...outputRows];
 const combinations = [...new Map(outputRows.map(row => [`${row[1]}\u0000${row[2]}`, [row[1], row[2], null, null]])).values()]
   .sort((a, b) => String(a[0]).localeCompare(String(b[0]), "tr") || String(a[1]).localeCompare(String(b[1]), "tr"));
 discountSheet.showGridLines = false;
@@ -35,30 +35,31 @@ discountSheet.freezePanes.freezeRows(1);
 const discountTable = discountSheet.tables.add(`A1:D${combinations.length + 1}`, true, "IndirimlerTablosu");
 discountTable.style = "TableStyleMedium2";
 const discountEnd = combinations.length + 1;
-sheet.getRange("H2").formulas = [[`=IF(SUMIFS('İndirimler'!$C$2:$C$${discountEnd},'İndirimler'!$A$2:$A$${discountEnd},B2,'İndirimler'!$B$2:$B$${discountEnd},C2)>0,ROUND(G2*(1-SUMIFS('İndirimler'!$C$2:$C$${discountEnd},'İndirimler'!$A$2:$A$${discountEnd},B2,'İndirimler'!$B$2:$B$${discountEnd},C2)),2),"")`]];
+sheet.getRange("H2").formulas = [[`=IF(OR(LOWER(TRIM(L2))="evet",LOWER(TRIM(L2))="e",L2="1"),"",IF(SUMIFS('İndirimler'!$C$2:$C$${discountEnd},'İndirimler'!$A$2:$A$${discountEnd},B2,'İndirimler'!$B$2:$B$${discountEnd},C2)>0,ROUND(G2*(1-SUMIFS('İndirimler'!$C$2:$C$${discountEnd},'İndirimler'!$A$2:$A$${discountEnd},B2,'İndirimler'!$B$2:$B$${discountEnd},C2)),2),""))`]];
 sheet.getRange(`H2:H${outputRows.length + 1}`).fillDown();
-sheet.getRange("I2").formulas = [[`=IF(SUMIFS('İndirimler'!$D$2:$D$${discountEnd},'İndirimler'!$A$2:$A$${discountEnd},B2,'İndirimler'!$B$2:$B$${discountEnd},C2)>0,ROUND(G2*(1-SUMIFS('İndirimler'!$D$2:$D$${discountEnd},'İndirimler'!$A$2:$A$${discountEnd},B2,'İndirimler'!$B$2:$B$${discountEnd},C2)),2),"")`]];
+sheet.getRange("I2").formulas = [[`=IF(OR(LOWER(TRIM(L2))="evet",LOWER(TRIM(L2))="e",L2="1"),"",IF(SUMIFS('İndirimler'!$D$2:$D$${discountEnd},'İndirimler'!$A$2:$A$${discountEnd},B2,'İndirimler'!$B$2:$B$${discountEnd},C2)>0,ROUND(G2*(1-SUMIFS('İndirimler'!$D$2:$D$${discountEnd},'İndirimler'!$A$2:$A$${discountEnd},B2,'İndirimler'!$B$2:$B$${discountEnd},C2)),2),""))`]];
 sheet.getRange(`I2:I${outputRows.length + 1}`).fillDown();
-sheet.getRange("A1:K1").format = {
+sheet.getRange("A1:L1").format = {
   fill: "#173F5F", font: { bold: true, color: "#FFFFFF", size: 11 },
   verticalAlignment: "center", horizontalAlignment: "center", wrapText: true,
   borders: { preset: "outside", style: "medium", color: "#173F5F" },
 };
-sheet.getRange(`A2:K${outputRows.length + 1}`).format = {
+sheet.getRange(`A2:L${outputRows.length + 1}`).format = {
   font: { color: "#17212B", size: 10 }, verticalAlignment: "center",
   borders: { insideHorizontal: { style: "thin", color: "#E5E7EB" } },
 };
 sheet.getRange(`A2:A${outputRows.length + 1}`).format.numberFormat = "@";
 sheet.getRange(`K2:K${outputRows.length + 1}`).format.numberFormat = "@";
+sheet.getRange(`L2:L${outputRows.length + 1}`).dataValidation = { rule: { type: "list", values: ["", "Evet"] } };
 sheet.getRange(`G2:I${outputRows.length + 1}`).format.numberFormat = '₺#,##0.00';
 sheet.getRange(`H2:H${outputRows.length + 1}`).format.fill = "#FFF4CC";
 sheet.getRange(`I2:I${outputRows.length + 1}`).format.fill = "#E9F8EF";
-sheet.getRange(`A1:K${outputRows.length + 1}`).format.rowHeight = 22;
-sheet.getRange("A1:K1").format.rowHeight = 34;
-const widths = [18, 28, 16, 25, 28, 20, 14, 14, 14, 42, 28];
+sheet.getRange(`A1:L${outputRows.length + 1}`).format.rowHeight = 22;
+sheet.getRange("A1:L1").format.rowHeight = 34;
+const widths = [18, 28, 16, 25, 28, 20, 14, 14, 14, 42, 28, 18];
 for (let i = 0; i < widths.length; i++) sheet.getRangeByIndexes(0, i, outputRows.length + 1, 1).format.columnWidth = widths[i];
 sheet.freezePanes.freezeRows(1);
-const table = sheet.tables.add(`A1:K${outputRows.length + 1}`, true, "UrunlerTablosu");
+const table = sheet.tables.add(`A1:L${outputRows.length + 1}`, true, "UrunlerTablosu");
 table.style = "TableStyleMedium2";
 table.showFilterButton = true;
 
@@ -99,7 +100,7 @@ designSheet.getRange("B1:B5").format.columnWidth = 78;
 designSheet.getRange("A1:B5").format.rowHeight = 30;
 
 await fs.mkdir("output", { recursive: true });
-const preview = await workbook.render({ sheetName: "Ürünler", range: "A1:K24", scale: 1.2, format: "png" });
+const preview = await workbook.render({ sheetName: "Ürünler", range: "A1:L24", scale: 1.2, format: "png" });
 await fs.writeFile("output/urunler-onizleme.png", new Uint8Array(await preview.arrayBuffer()));
 const discountPreview = await workbook.render({ sheetName: "İndirimler", range: `A1:D${Math.min(combinations.length + 1, 30)}`, scale: 1.5, format: "png" });
 await fs.writeFile("output/indirimler-onizleme.png", new Uint8Array(await discountPreview.arrayBuffer()));
@@ -109,7 +110,7 @@ const usagePreview = await workbook.render({ sheetName: "Kullanım", range: "A1:
 await fs.writeFile("output/kullanim-onizleme.png", new Uint8Array(await usagePreview.arrayBuffer()));
 const exported = await SpreadsheetFile.exportXlsx(workbook);
 await exported.save("output/Fiyat-Listesi-Yonetim.xlsx");
-const check = await workbook.inspect({ kind: "table", range: "Ürünler!A1:K12", include: "values,formulas", tableMaxRows: 12, tableMaxCols: 11 });
+const check = await workbook.inspect({ kind: "table", range: "Ürünler!A1:L12", include: "values,formulas", tableMaxRows: 12, tableMaxCols: 12 });
 console.log(check.ndjson);
 const errors = await workbook.inspect({ kind: "match", searchTerm: "#REF!|#DIV/0!|#VALUE!|#NAME\\?|#N/A", options: { useRegex: true, maxResults: 50 }, summary: "formula scan" });
 console.log(errors.ndjson);
