@@ -12,6 +12,5 @@ Bu proje, `output/Fiyat-Listesi-Yonetim.xlsx` dosyasındaki ürünleri öğretme
 
 Bir ürünün yeni veya ek barkodlarını `Ürünler` sayfasındaki **K - Yeni Barkodlar** sütununa yazın. Birden fazla barkodu virgülle ayırın. Eski barkod ve bu sütundaki bütün barkodlar web aramasında kullanılabilir.
 
-İndirim uygulanmayacak ürünlerde **L - İndirim Yapma** sütununa `Evet` yazın. Bu ürünlerin İnd ve Toplu fiyatları boş bırakılır. Hücreyi boş bırakırsanız normal yayın ve sınıf indirimi uygulanır.
 
 Tanıtım Linki bulunan satırlarda oluşturulan kitap adı tıklanabilir olur. GitHub deposunda **Settings → Pages → Source** bölümünü **GitHub Actions** olarak seçin. Yayın adresi oluşunca program GitHub proje bağlantısını otomatik gösterir ve aynı bağlantı için QR kod üretilebilir; Excel ve PDF değişse bile QR kod değişmez.

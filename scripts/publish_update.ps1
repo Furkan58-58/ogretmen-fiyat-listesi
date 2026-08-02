@@ -30,8 +30,12 @@ function Find-Git {
 }
 
 function Run-Git([string[]]$arguments) {
+    $oldErrorAction = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
     $output = & $script:gitExe -c "safe.directory=$($projectDir.Replace('\', '/'))" @arguments 2>&1
-    if ($LASTEXITCODE -ne 0) {
+    $exitCode = $LASTEXITCODE
+    $ErrorActionPreference = $oldErrorAction
+    if ($exitCode -ne 0) {
         throw (($output | Out-String).Trim())
     }
     return ($output | Out-String).Trim()
