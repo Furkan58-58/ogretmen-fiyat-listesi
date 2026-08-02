@@ -42,6 +42,16 @@ def normalize_grade(value):
     return "Maarif TYT" if text.casefold() == "maarif tyt" else text
 
 
+def barcode_list(*values):
+    result = []
+    for value in values:
+        for barcode in re.split(r"[,;\n]+", clean(value)):
+            barcode = barcode.strip().lstrip("'")
+            if barcode and barcode not in result:
+                result.append(barcode)
+    return result
+
+
 def anchor(text):
     base = re.sub(r"[^a-z0-9]+", "-", text.casefold().replace("ı", "i").replace("ş", "s").replace("ğ", "g").replace("ü", "u").replace("ö", "o").replace("ç", "c")).strip("-")
     return f"ders-{base}"
@@ -75,8 +85,12 @@ def load_data():
         book_name = " • ".join(x for x in [publisher, grade, course, descriptor] if x)
         price = money_value(get(row, "Fiyat"))
         single_rate, bulk_rate = rates.get((publisher, grade), (None, None))
+        extra_barcodes = get(row, "Yeni Barkodlar")
+        if extra_barcodes is None and len(row) > 10:
+            extra_barcodes = row[10]
+        barcodes = barcode_list(get(row, "Barkod"), extra_barcodes)
         products.append({
-            "barcode": clean(get(row, "Barkod")).lstrip("'"), "publisher": publisher, "grade": grade,
+            "barcode": barcodes[0] if barcodes else "", "barcodes": barcodes, "publisher": publisher, "grade": grade,
             "course": course, "category": general, "type": kind, "bookName": book_name,
             "price": price, "discountPrice": round(price * (1 - single_rate), 2) if price is not None and single_rate else None,
             "bulkPrice": round(price * (1 - bulk_rate), 2) if price is not None and bulk_rate else None,

@@ -51,7 +51,7 @@ function render() {
   const publisher = $("#publisher").value;
   state.shown = state.all.filter((x) => x.course === state.course
     && (!state.kind || (x.type || "Diğer") === state.kind)
-    && (!query || norm([x.publisher, x.grade, x.category, x.type, x.barcode].join(" ")).includes(query))
+    && (!query || norm([x.publisher, x.grade, x.category, x.type, ...(x.barcodes || [x.barcode])].join(" ")).includes(query))
     && (!publisher || x.publisher === publisher));
   $("#count").textContent = `${state.course}${state.kind ? ` • ${state.kind}` : ""} • ${state.shown.length} ürün`;
   $("#empty").hidden = state.shown.length > 0;
@@ -77,7 +77,7 @@ function useBarcode(barcode) {
   const value = String(barcode || "").trim();
   if (!value) return;
   $("#q").value = value;
-  state.course = state.all.find((x) => String(x.barcode) === value)?.course || state.course;
+  state.course = state.all.find((x) => (x.barcodes || [x.barcode]).map(String).includes(value))?.course || state.course;
   state.kind = "";
   stopScanner();
   renderCourses();
@@ -101,7 +101,7 @@ async function scanFrame(detector) {
 async function openScanner() {
   if (!navigator.mediaDevices?.getUserMedia) {
     const barcode = prompt("Bu tarayıcı kamerayla barkod okumayı desteklemiyor. Barkod numarasını yazabilirsiniz:");
-    if (barcode) { $("#q").value = barcode.trim(); render(); }
+    if (barcode) useBarcode(barcode);
     return;
   }
   $("#scanner").showModal();
