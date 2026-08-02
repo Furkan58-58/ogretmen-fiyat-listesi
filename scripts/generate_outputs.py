@@ -89,32 +89,38 @@ def create_pdf(products, updated):
 
     grouped = {}
     for p in products:
-        grouped.setdefault((p["grade"] or "Diğer", p["course"] or "Diğer"), []).append(p)
-    first = True
-    for (grade, course), items in sorted(grouped.items(), key=lambda x: (x[0][0].casefold(), x[0][1].casefold())):
-        if not first:
+        grouped.setdefault(p["course"] or "Diğer", {}).setdefault(p["grade"] or "Diğer", []).append(p)
+    grade_order = {name: index for index, name in enumerate(["9. Sınıf", "10. Sınıf", "11. Sınıf", "12. Sınıf", "Maarif TYT"])}
+    first_course = True
+    for course, grade_groups in sorted(grouped.items(), key=lambda x: x[0].casefold()):
+        if not first_course:
+            story.append(PageBreak())
+        first_course = False
+        story.append(Paragraph(course, title))
+        story.append(Paragraph("Sınıflara göre kitap ve fiyat listesi", meta))
+        story.append(Spacer(1, 5 * mm))
+        for grade, items in sorted(grade_groups.items(), key=lambda x: (grade_order.get(x[0], 99), x[0].casefold())):
+            head = Table([[Paragraph(grade, section)]], colWidths=[182 * mm])
+            head.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#173F5F")), ("LEFTPADDING", (0, 0), (-1, -1), 7), ("RIGHTPADDING", (0, 0), (-1, -1), 7), ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5)]))
+            story.append(head)
+            rows = [[Paragraph("Yayın / Kitap", cell_bold), Paragraph("Tür", cell_bold), Paragraph("Barkod", cell_bold), Paragraph("Fiyat", cell_bold)]]
+            for p in items:
+                detail = p["publisher"] + (f" — {p['category']}" if p["category"] else "")
+                price_text = f"₺{p['salePrice']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
+                if p["discount"]:
+                    price_text += f"<br/><font size='6' color='#6B7280'>%{p['discount']*100:.0f} indirim</font>"
+                rows.append([Paragraph(detail, cell), Paragraph(p["type"], cell), Paragraph(p["barcode"], cell), Paragraph(price_text, price_style)])
+            table = Table(rows, colWidths=[78 * mm, 38 * mm, 39 * mm, 27 * mm], repeatRows=1)
+            table.setStyle(TableStyle([
+                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#F2B134")),
+                ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#D9DEE5")),
+                ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                ("LEFTPADDING", (0, 0), (-1, -1), 4), ("RIGHTPADDING", (0, 0), (-1, -1), 4),
+                ("TOPPADDING", (0, 0), (-1, -1), 3), ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
+                ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F7FAFC")]),
+            ]))
+            story.append(table)
             story.append(Spacer(1, 4 * mm))
-        first = False
-        head = Table([[Paragraph(f"{grade}  •  {course}", section)]], colWidths=[182 * mm])
-        head.setStyle(TableStyle([("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#173F5F")), ("LEFTPADDING", (0, 0), (-1, -1), 7), ("RIGHTPADDING", (0, 0), (-1, -1), 7), ("TOPPADDING", (0, 0), (-1, -1), 5), ("BOTTOMPADDING", (0, 0), (-1, -1), 5)]))
-        story.append(head)
-        rows = [[Paragraph("Yayın / Kitap", cell_bold), Paragraph("Tür", cell_bold), Paragraph("Barkod", cell_bold), Paragraph("Fiyat", cell_bold)]]
-        for p in items:
-            detail = p["publisher"] + (f" — {p['category']}" if p["category"] else "")
-            price_text = f"₺{p['salePrice']:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
-            if p["discount"]:
-                price_text += f"<br/><font size='6' color='#6B7280'>%{p['discount']*100:.0f} indirim</font>"
-            rows.append([Paragraph(detail, cell), Paragraph(p["type"], cell), Paragraph(p["barcode"], cell), Paragraph(price_text, price_style)])
-        table = Table(rows, colWidths=[78 * mm, 38 * mm, 39 * mm, 27 * mm], repeatRows=1)
-        table.setStyle(TableStyle([
-            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#F2B134")),
-            ("GRID", (0, 0), (-1, -1), 0.25, colors.HexColor("#D9DEE5")),
-            ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-            ("LEFTPADDING", (0, 0), (-1, -1), 4), ("RIGHTPADDING", (0, 0), (-1, -1), 4),
-            ("TOPPADDING", (0, 0), (-1, -1), 3), ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
-            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.white, colors.HexColor("#F7FAFC")]),
-        ]))
-        story.append(table)
     doc.build(story)
 
 
