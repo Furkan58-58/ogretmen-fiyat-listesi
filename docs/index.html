@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#173f5f">
+  <title>Öğretmen Fiyat Listesi</title>
+  <meta name="description" content="2026–2027 güncel öğretmen kitap fiyatları">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header class="hero"><div class="wrap"><p class="eyebrow">2026–2027</p><h1>Öğretmen Fiyat Listesi</h1><p class="lead">Kitapları sınıf, ders ve yayınevine göre bulun. Güncel fiyatı hemen görün.</p><div class="actions"><a class="button primary" href="downloads/Fiyat-Listesi.pdf">PDF’yi indir</a><button class="button secondary" id="share">Listeyi paylaş</button></div><p id="updated" class="updated">Liste hazırlanıyor…</p></div></header>
+  <main class="wrap main"><section class="filters" aria-label="Liste filtreleri"><label class="search"><span>Kitap ara</span><input id="q" type="search" placeholder="Yayın, ders, tür veya barkod…" autocomplete="off"></label><label><span>Sınıf</span><select id="grade"><option value="">Tümü</option></select></label><label><span>Ders</span><select id="course"><option value="">Tümü</option></select></label><label><span>Yayın</span><select id="publisher"><option value="">Tümü</option></select></label></section><div class="result-head"><strong id="count">0 ürün</strong><button id="clear" class="text-button">Filtreleri temizle</button></div><section id="list" class="list" aria-live="polite"></section><div id="empty" class="empty" hidden>Bu filtrelere uygun kitap bulunamadı.</div></main>
+  <footer><div class="wrap">Fiyatlar Excel listesinden otomatik hazırlanır. Sipariş öncesinde güncel fiyatı kontrol ediniz.</div></footer>
+  <script src="assets/app.js" defer></script>
+</body></html>

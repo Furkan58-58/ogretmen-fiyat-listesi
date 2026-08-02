@@ -1,0 +1,38 @@
+name: Fiyat listesini yenile
+on:
+  push:
+    branches: [main]
+    paths: ['output/Fiyat-Listesi-Yonetim.xlsx','scripts/**','docs/**','.github/workflows/publish.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - run: pip install openpyxl reportlab
+      - run: python scripts/generate_outputs.py
+      - uses: actions/upload-pages-artifact@v3
+        with: {path: docs}
+      - uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: Fiyat listesi çıktılarını yenile
+          file_pattern: docs/data/products.json docs/downloads/Fiyat-Listesi.pdf
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: GitHub Pages'e yayınla
+        id: deployment
+        uses: actions/deploy-pages@v4
