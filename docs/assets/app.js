@@ -29,11 +29,26 @@ function renderCourses() {
     state.course = button.dataset.course;
     state.kind = "";
     state.scanAllCourses = false;
+    $("#publisher").value = "";
     renderCourses();
+    renderPublishers();
     renderTypes();
     render();
     document.querySelector(".type-section").scrollIntoView({ behavior: "smooth", block: "start" });
   });
+}
+
+function renderPublishers() {
+  const select = $("#publisher");
+  const current = select.value;
+  const publishers = [...new Set(state.all
+    .filter((x) => x.course === state.course)
+    .map((x) => x.publisher)
+    .filter(Boolean))]
+    .sort((a, b) => a.localeCompare(b, "tr"));
+  select.innerHTML = '<option value="">Tüm yayınlar</option>';
+  publishers.forEach((value) => select.add(new Option(value, value)));
+  select.value = publishers.includes(current) ? current : "";
 }
 
 function renderTypes() {
@@ -142,8 +157,8 @@ async function start() {
     document.title = data.theme.title;
   }
   $("#updated").textContent = `${data.count} ürün • Son güncelleme: ${data.updated}`;
-  [...new Set(state.all.map((x) => x.publisher).filter(Boolean))].sort((a, b) => a.localeCompare(b, "tr")).forEach((value) => $("#publisher").add(new Option(value, value)));
   renderCourses();
+  renderPublishers();
   renderTypes();
   render();
 }
