@@ -3,9 +3,10 @@ const $ = (selector) => document.querySelector(selector);
 const money = (value) => new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(value);
 const norm = (value) => (value || "").toLocaleLowerCase("tr-TR");
 const gradeOrder = ["9. Sınıf", "10. Sınıf", "11. Sınıf", "12. Sınıf", "Maarif TYT"];
-const courseOrder = ["Matematik", "Geometri", "Türk Dili ve Edebiyatı", "Tarih", "Coğrafya", "Felsefe", "Din Kültürü", "Türkçe", "Sosyal Bilimler", "Tüm Dersler"];
+const courseOrder = ["Matematik", "Geometri", "Fizik", "Kimya", "Biyoloji", "Türk Dili ve Edebiyatı", "Tarih", "Coğrafya", "Felsefe", "Din Kültürü", "Türkçe", "Sosyal Bilimler", "Tüm Dersler"];
 let cameraStream = null;
 let scanTimer = null;
+let zxingControls = null;
 
 const showPrice = (value) => value == null ? "—" : money(value);
 
@@ -64,10 +65,25 @@ function render() {
 function stopScanner() {
   if (scanTimer) clearTimeout(scanTimer);
   scanTimer = null;
+  if (zxingControls) zxingControls.stop();
+  zxingControls = null;
   if (cameraStream) cameraStream.getTracks().forEach((track) => track.stop());
   cameraStream = null;
   $("#scanner-video").srcObject = null;
   if ($("#scanner").open) $("#scanner").close();
+}
+
+function useBarcode(barcode) {
+  const value = String(barcode || "").trim();
+  if (!value) return;
+  $("#q").value = value;
+  state.course = state.all.find((x) => String(x.barcode) === value)?.course || state.course;
+  state.kind = "";
+  stopScanner();
+  renderCourses();
+  renderTypes();
+  render();
+  document.querySelector(".result-head").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 async function scanFrame(detector) {
@@ -75,15 +91,7 @@ async function scanFrame(detector) {
   try {
     const codes = await detector.detect($("#scanner-video"));
     if (codes.length) {
-      const barcode = codes[0].rawValue;
-      $("#q").value = barcode;
-      state.course = state.all.find((x) => x.barcode === barcode)?.course || state.course;
-      state.kind = "";
-      stopScanner();
-      renderCourses();
-      renderTypes();
-      render();
-      document.querySelector(".result-head").scrollIntoView({ behavior: "smooth", block: "start" });
+      useBarcode(codes[0].rawValue);
       return;
     }
   } catch (_) {}
@@ -91,7 +99,7 @@ async function scanFrame(detector) {
 }
 
 async function openScanner() {
-  if (!("BarcodeDetector" in window) || !navigator.mediaDevices?.getUserMedia) {
+  if (!navigator.mediaDevices?.getUserMedia) {
     const barcode = prompt("Bu tarayıcı kamerayla barkod okumayı desteklemiyor. Barkod numarasını yazabilirsiniz:");
     if (barcode) { $("#q").value = barcode.trim(); render(); }
     return;
@@ -99,6 +107,16 @@ async function openScanner() {
   $("#scanner").showModal();
   $("#scanner-status").textContent = "Kamera hazırlanıyor…";
   try {
+    if (!("BarcodeDetector" in window) && window.ZXingBrowser?.BrowserMultiFormatReader) {
+      const reader = new ZXingBrowser.BrowserMultiFormatReader();
+      zxingControls = await reader.decodeFromConstraints(
+        { video: { facingMode: { ideal: "environment" } }, audio: false },
+        $("#scanner-video"),
+        (result) => { if (result) useBarcode(result.getText()); }
+      );
+      $("#scanner-status").textContent = "Barkod aranıyor…";
+      return;
+    }
     cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
     $("#scanner-video").srcObject = cameraStream;
     await $("#scanner-video").play();
