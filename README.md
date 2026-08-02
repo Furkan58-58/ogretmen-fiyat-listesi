@@ -4,8 +4,10 @@ Bu proje, `output/Fiyat-Listesi-Yonetim.xlsx` dosyasındaki ürünleri öğretme
 
 ## Güncelleme
 
-1. `output/Fiyat-Listesi-Yonetim.xlsx` dosyasında ürün veya fiyatları değiştirin. `Fiyat`, `İnd` ve `Toplu` sütunları web programında ve PDF'de ayrı gösterilir.
-2. Dosyayı aynı adla kaydedin.
-3. Değişikliği GitHub'a yükleyin. Web listesi ve PDF otomatik yenilenir.
+1. `output/Fiyat-Listesi-Yonetim.xlsx` dosyasında ürün veya fiyatları değiştirin.
+2. `İndirimler` sayfasında her Yayın + Sınıf için Tekli ve Toplu indirim oranını yazın; `İnd` ve `Toplu` fiyatlar otomatik hesaplanır.
+3. `Tasarım` sayfasından başlık, alt başlık, ana renk ve vurgu rengini değiştirin.
+4. Dosyayı aynı adla kaydedin.
+5. Değişikliği GitHub'a yükleyin. Web listesi ve PDF otomatik yenilenir.
 
 Tanıtım Linki bulunan satırlarda oluşturulan kitap adı tıklanabilir olur. GitHub deposunda **Settings → Pages → Source** bölümünü **GitHub Actions** olarak seçin. Yayın adresi oluşunca program GitHub proje bağlantısını otomatik gösterir ve aynı bağlantı için QR kod üretilebilir; Excel ve PDF değişse bile QR kod değişmez.
