@@ -1,4 +1,4 @@
-const state = { all: [], shown: [], course: "", kind: "" };
+const state = { all: [], shown: [], course: "", kind: "", scanAllCourses: false };
 const $ = (selector) => document.querySelector(selector);
 const money = (value) => new Intl.NumberFormat("tr-TR", { style: "currency", currency: "TRY" }).format(value);
 const norm = (value) => (value || "").toLocaleLowerCase("tr-TR");
@@ -24,10 +24,11 @@ function renderCourses() {
     return a.localeCompare(b, "tr");
   });
   if (!state.course) state.course = courses[0] || "";
-  $("#courses").innerHTML = courses.map((course) => `<button class="grade-tab ${course === state.course ? "active" : ""}" data-course="${course}">${course}<small>${state.all.filter((x) => x.course === course).length} kitap</small></button>`).join("");
+  $("#courses").innerHTML = courses.map((course) => `<button class="grade-tab ${!state.scanAllCourses && course === state.course ? "active" : ""}" data-course="${course}">${course}<small>${state.all.filter((x) => x.course === course).length} kitap</small></button>`).join("");
   $("#courses").querySelectorAll("button").forEach((button) => button.onclick = () => {
     state.course = button.dataset.course;
     state.kind = "";
+    state.scanAllCourses = false;
     renderCourses();
     renderTypes();
     render();
@@ -41,6 +42,7 @@ function renderTypes() {
   $("#types").innerHTML = [`<button class="type-tab ${state.kind === "" ? "active" : ""}" data-kind="">Tümü</button>`, ...types.map((type) => `<button class="type-tab ${type === state.kind ? "active" : ""}" data-kind="${type}">${type}<small> (${items.filter((x) => (x.type || "Diğer") === type).length})</small></button>`)].join("");
   $("#types").querySelectorAll("button").forEach((button) => button.onclick = () => {
     state.kind = button.dataset.kind;
+    state.scanAllCourses = false;
     renderTypes();
     render();
   });
@@ -49,11 +51,11 @@ function renderTypes() {
 function render() {
   const query = norm($("#q").value);
   const publisher = $("#publisher").value;
-  state.shown = state.all.filter((x) => x.course === state.course
+  state.shown = state.all.filter((x) => (state.scanAllCourses || x.course === state.course)
     && (!state.kind || (x.type || "Diğer") === state.kind)
     && (!query || norm([x.publisher, x.grade, x.category, x.type, ...(x.barcodes || [x.barcode])].join(" ")).includes(query))
     && (!publisher || x.publisher === publisher));
-  $("#count").textContent = `${state.course}${state.kind ? ` • ${state.kind}` : ""} • ${state.shown.length} ürün`;
+  $("#count").textContent = `${state.scanAllCourses ? "Tüm derslerde barkod araması" : state.course}${state.kind ? ` • ${state.kind}` : ""} • ${state.shown.length} ürün`;
   $("#empty").hidden = state.shown.length > 0;
   const groups = {};
   state.shown.forEach((x) => (groups[x.grade || "Diğer"] ??= []).push(x));
@@ -77,8 +79,9 @@ function useBarcode(barcode) {
   const value = String(barcode || "").trim();
   if (!value) return;
   $("#q").value = value;
-  state.course = state.all.find((x) => (x.barcodes || [x.barcode]).map(String).includes(value))?.course || state.course;
   state.kind = "";
+  state.scanAllCourses = true;
+  $("#publisher").value = "";
   stopScanner();
   renderCourses();
   renderTypes();
@@ -145,8 +148,9 @@ async function start() {
   render();
 }
 
-["#q", "#publisher"].forEach((id) => $(id).addEventListener(id === "#q" ? "input" : "change", render));
-$("#clear").onclick = () => { $("#q").value = ""; $("#publisher").value = ""; state.kind = ""; renderTypes(); render(); };
+$("#q").addEventListener("input", () => { state.scanAllCourses = false; render(); });
+$("#publisher").addEventListener("change", () => { state.scanAllCourses = false; render(); });
+$("#clear").onclick = () => { $("#q").value = ""; $("#publisher").value = ""; state.kind = ""; state.scanAllCourses = false; renderTypes(); render(); };
 $("#share").onclick = async () => { const data = { title: document.title, text: "Güncel öğretmen kitap fiyat listesi", url: location.href }; if (navigator.share) await navigator.share(data); else { await navigator.clipboard.writeText(location.href); $("#share").textContent = "Link kopyalandı"; } };
 $("#scan").onclick = openScanner;
 $("#scanner-close").onclick = stopScanner;
