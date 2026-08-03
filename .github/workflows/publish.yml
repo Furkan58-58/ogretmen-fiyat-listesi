@@ -25,7 +25,7 @@ jobs:
       - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: Fiyat listesi çıktılarını yenile
-          file_pattern: docs/data/products.json docs/downloads/Fiyat-Listesi.pdf
+          file_pattern: docs/data/products.json docs/downloads/*.pdf
   deploy:
     environment:
       name: github-pages

@@ -3,15 +3,28 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#173f5f">
-  <title>Öğretmen Fiyat Listesi</title>
-  <meta name="description" content="2026–2027 güncel öğretmen kitap fiyatları">
+  <title>Öğretmen Fiyat Listeleri</title>
+  <meta name="description" content="Kitabevi ve kademeye göre güncel öğretmen kitap fiyatları">
   <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
-  <header class="hero"><div class="wrap"><p class="eyebrow">2026–2027</p><h1 id="site-title">Öğretmen Fiyat Listesi</h1><p class="lead" id="site-subtitle">Dersi seçin, sınıflara ayrılmış kitapları ve üç farklı fiyatı görüntüleyin.</p><div class="actions"><a class="button primary" href="downloads/Fiyat-Listesi.pdf">PDF’yi indir</a><button class="button secondary" id="share">Listeyi paylaş</button></div><p id="updated" class="updated">Liste hazırlanıyor…</p></div></header>
-  <main class="wrap main"><section aria-label="Ders seçimi"><h2 class="section-title">Dersi seçin</h2><div id="courses" class="grade-tabs"></div></section><section aria-label="Kitap türü seçimi" class="type-section"><h2 class="section-title">Kitap türü</h2><div id="types" class="type-tabs"></div></section><section class="filters" aria-label="Liste filtreleri"><label class="search"><span>Seçili derste kitap ara</span><input id="q" type="search" placeholder="Yayın, sınıf, tür veya barkod…" autocomplete="off"></label><label><span>Yayın</span><select id="publisher"><option value="">Tüm yayınlar</option></select></label><button class="scan-button" id="scan" type="button"><span class="scan-icon">▣</span><span>Kamerayla<br>barkod ara</span></button></section><div class="result-head"><strong id="count">0 ürün</strong><button id="clear" class="text-button">Aramayı temizle</button></div><section id="list" class="course-list" aria-live="polite"></section><div id="empty" class="empty" hidden>Bu derste aradığınız kitap bulunamadı.</div></main>
-  <dialog id="scanner"><div class="scanner-head"><strong>Barkodu kameraya gösterin</strong><button id="scanner-close" aria-label="Kamerayı kapat">×</button></div><video id="scanner-video" playsinline muted></video><p id="scanner-status">Kamera hazırlanıyor…</p><p class="scanner-help">Barkod çerçevenin içinde net göründüğünde kitap otomatik aranır.</p></dialog>
+  <header class="hero"><div class="wrap">
+    <button id="back-home" class="back-home" type="button" hidden>← Tüm listeler</button>
+    <p class="eyebrow">2026–2027</p><h1 id="site-title">Öğretmen Fiyat Listeleri</h1>
+    <p class="lead" id="site-subtitle">Kitabevini ve kademeyi seçerek güncel listeye ulaşın.</p>
+    <div id="catalog-actions" class="actions" hidden><a class="button primary" id="pdf-link" href="#">PDF’yi indir</a><button class="button secondary" id="share">Listeyi paylaş</button></div>
+    <div id="contacts" class="contacts"></div><p id="updated" class="updated">Liste hazırlanıyor…</p>
+  </div></header>
+  <main class="wrap main">
+    <section id="home-view"><div class="home-heading"><div><p class="kicker">FİYAT LİSTELERİ</p><h2>Kitabevi ve kademeyi seçin</h2></div><p>Her bölümün dersleri, fiyatları, iletişim bilgileri ve PDF dosyası ayrıdır.</p></div><div id="catalogs" class="catalog-grid"></div></section>
+    <section id="catalog-view" hidden>
+      <section aria-label="Ders seçimi"><h2 class="section-title">Dersi seçin</h2><div id="courses" class="grade-tabs"></div></section>
+      <section aria-label="Kitap türü seçimi" class="type-section"><h2 class="section-title">Kitap türü</h2><div id="types" class="type-tabs"></div></section>
+      <section class="filters" aria-label="Liste filtreleri"><label class="search"><span>Seçili derste kitap ara</span><input id="q" type="search" placeholder="Yayın, sınıf, tür veya barkod…" autocomplete="off"></label><label><span>Yayın</span><select id="publisher"><option value="">Tüm yayınlar</option></select></label><button class="scan-button" id="scan" type="button"><span class="scan-icon">▣</span><span>Kamerayla<br>barkod ara</span></button></section>
+      <div class="result-head"><strong id="count">0 ürün</strong><button id="clear" class="text-button">Aramayı temizle</button></div><section id="list" class="course-list" aria-live="polite"></section><div id="empty" class="empty" hidden>Bu bölümde aradığınız kitap bulunamadı.</div>
+    </section>
+  </main>
+  <dialog id="scanner"><div class="scanner-head"><strong>Barkodu kameraya gösterin</strong><button id="scanner-close" aria-label="Kamerayı kapat">×</button></div><video id="scanner-video" playsinline muted></video><p id="scanner-status">Kamera hazırlanıyor…</p><p class="scanner-help">Barkod net göründüğünde seçili kitabevi ve kademede otomatik aranır.</p></dialog>
   <footer><div class="wrap">Fiyatlar Excel listesinden otomatik hazırlanır. Sipariş öncesinde güncel fiyatı kontrol ediniz.</div></footer>
-  <script src="https://unpkg.com/@zxing/browser@0.1.1" defer></script>
-  <script src="assets/app.js" defer></script>
+  <script src="https://unpkg.com/@zxing/browser@0.1.1" defer></script><script src="assets/app.js" defer></script>
 </body></html>
