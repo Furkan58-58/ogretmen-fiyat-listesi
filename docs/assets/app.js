@@ -51,7 +51,7 @@ function render() {
 
 function openCatalog(catalog) {
   state.catalog = catalog; state.all = state.data.products.filter((x) => x.bookstoreCode === catalog.bookstoreCode && x.level === catalog.level); state.course = ""; state.kind = "";
-  document.documentElement.style.setProperty("--navy", catalog.mainColor); document.documentElement.style.setProperty("--gold", catalog.accentColor);
+  document.documentElement.style.setProperty("--navy", catalog.mainColor); document.documentElement.style.setProperty("--navy2", catalog.mainColor); document.documentElement.style.setProperty("--gold", catalog.accentColor);
   $("#site-title").textContent = catalog.title; $("#site-subtitle").textContent = catalog.description; document.title = catalog.title;
   $("#home-view").hidden = true; $("#catalog-view").hidden = false; $("#catalog-actions").hidden = false; $("#pdf-link").href = catalog.pdf;
   $("#updated").textContent = `${catalog.count} ürün • Son güncelleme: ${state.data.updated}`;
