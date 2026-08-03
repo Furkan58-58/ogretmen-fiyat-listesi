@@ -14,8 +14,8 @@ Bir ürünün yeni veya ek barkodlarını `Ürünler` sayfasındaki **K - Yeni B
 
 ## Kitabevi ve kademe ayarları
 
-- `Ürünler` sayfasındaki **L - Kitabevi Kodu** sütununda ürünün ait olduğu kitabevini seçin. Boş bırakılan eski ürünler ilk kitabevine atanır.
-- `Ayarlar` sayfasında sınıfların `Ortaokul` veya `Lise` kademesini ve kitabevi kodu/adı listesini düzenleyin.
+- `Ürünler` sayfasında ürün bilgileri K sütununda biter; kitabevi seçimi ürün satırlarında yapılmaz.
+- `Ayarlar` sayfasında sınıfların `Ortaokul` veya `Lise` kademesini, kitabevi kodu/adı listesini ve her yayınevinin ait olduğu kitabevini düzenleyin.
 - `Sayfa Ayarları` sayfasında dört giriş bölümünün başlık, açıklama, renk, görünürlük ve sırasını değiştirin.
 - `İletişim` sayfasına aynı kitabevi ve kademe için istediğiniz kadar ad-soyad ve telefon satırı ekleyin.
 

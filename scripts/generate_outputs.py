@@ -90,6 +90,13 @@ def load_data():
             bookstores = configured
     bookstore_names = dict(bookstores)
     first_bookstore = bookstores[0][0]
+    publisher_bookstores = {}
+    if "Ayarlar" in wb.sheetnames:
+        settings_ws = wb["Ayarlar"]
+        for publisher, bookstore_code in settings_ws.iter_rows(min_row=4, min_col=7, max_col=8, values_only=True):
+            publisher, bookstore_code = clean(publisher), clean(bookstore_code)
+            if publisher and bookstore_code:
+                publisher_bookstores[publisher] = bookstore_code
 
     page_rows = []
     if "Sayfa Ayarları" in wb.sheetnames:
@@ -150,7 +157,7 @@ def load_data():
         if extra_barcodes is None and len(row) > 10:
             extra_barcodes = row[10]
         barcodes = barcode_list(get(row, "Barkod"), extra_barcodes)
-        bookstore_code = clean(get(row, "Kitabevi Kodu")) or (clean(row[11]) if len(row) > 11 else "") or first_bookstore
+        bookstore_code = publisher_bookstores.get(publisher, first_bookstore)
         level = grade_levels.get(grade, "Lise")
         products.append({
             "barcode": barcodes[0] if barcodes else "", "barcodes": barcodes, "publisher": publisher, "grade": grade,
