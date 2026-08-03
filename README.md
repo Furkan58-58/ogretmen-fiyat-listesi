@@ -16,7 +16,8 @@ Bir ürünün yeni veya ek barkodlarını `Ürünler` sayfasındaki **K - Yeni B
 
 - `Ürünler` sayfasında ürün bilgileri K sütununda biter; kitabevi seçimi ürün satırlarında yapılmaz.
 - `Ayarlar` sayfasında sınıfların `Ortaokul` veya `Lise` kademesini, kitabevi kodu/adı listesini ve her yayınevinin ait olduğu kitabevini düzenleyin.
-- `Sayfa Ayarları` sayfasında dört giriş bölümünün başlık, açıklama, renk, görünürlük ve sırasını değiştirin.
+- Yeni yayınevi eklediğinizde `Fiyat Listesini Guncelle.cmd` eşleştirme listesine yayınevini otomatik ekler; yeni kayıt başlangıçta `kitabevi-1` olur.
+- `Sayfa Ayarları` sayfasında dört giriş bölümünün açıklama, renk, görünürlük, sıra ve logo bağlantısını değiştirin. Başlık, `Ayarlar` sayfasındaki kitabevi adından otomatik oluşturulur.
 - `İletişim` sayfasına aynı kitabevi ve kademe için istediğiniz kadar ad-soyad ve telefon satırı ekleyin.
 
 Ana sayfa her aktif kitabevi-kademe birleşimi için ayrı bir bağlantı oluşturur. Yeni ürün listenin en altına eklense bile ders ve sınıf bilgisine göre otomatik olarak doğru grupta gösterilir. Her bölümün PDF dosyası ayrıca hazırlanır.

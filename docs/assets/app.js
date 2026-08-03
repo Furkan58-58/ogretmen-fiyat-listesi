@@ -55,7 +55,8 @@ function openCatalog(catalog) {
   $("#site-title").textContent = catalog.title; $("#site-subtitle").textContent = catalog.description; document.title = catalog.title;
   $("#home-view").hidden = true; $("#catalog-view").hidden = false; $("#catalog-actions").hidden = false; $("#pdf-link").href = catalog.pdf;
   $("#updated").textContent = `${catalog.count} ürün • Son güncelleme: ${state.data.updated}`;
-  $("#contacts").innerHTML = catalog.contacts.map((c) => { const digits = c.phone.replace(/\D/g, ""); const href = c.whatsapp ? `https://wa.me/${digits.startsWith("0") ? `90${digits.slice(1)}` : digits}` : `tel:${digits}`; return `<a class="contact-pill" href="${href}"><span>☎</span><span><strong>${c.name || "İletişim"}</strong><small>${c.phone}</small></span></a>`; }).join("");
+  const logo = $("#catalog-logo"); logo.hidden = false; logo.innerHTML = catalog.logo ? `<img src="${catalog.logo}" alt="${catalog.bookstoreName} logosu">` : "<span>LOGO</span>";
+  $("#contacts").innerHTML = catalog.contacts.map((c) => { const digits = c.phone.replace(/\D/g, ""); const href = c.whatsapp ? `https://wa.me/${digits.startsWith("0") ? `90${digits.slice(1)}` : digits}` : `tel:${digits}`; return `<a class="contact-pill" href="${href}"><span class="contact-icon ${c.whatsapp ? "whatsapp" : ""}">${c.whatsapp ? "WP" : "☎"}</span><span><strong>${c.name || "İletişim"}</strong><small>${c.phone}</small></span></a>`; }).join("");
   renderCourses(); renderPublishers(); renderTypes(); render();
 }
 

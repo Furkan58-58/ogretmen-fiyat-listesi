@@ -115,6 +115,7 @@ def load_data():
                 "description": clean(page_value("Açıklama")) or f"{level} kitapları ve güncel fiyat listesi",
                 "mainColor": clean(page_value("Ana Renk")) or theme["mainColor"],
                 "accentColor": clean(page_value("Vurgu Rengi")) or theme["accentColor"],
+                "logo": clean(page_value("Logo Linki")),
                 "order": money_value(page_value("Ana Sayfa Sırası")) or 999,
             })
     if not page_rows:

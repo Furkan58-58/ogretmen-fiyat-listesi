@@ -4,11 +4,16 @@ Add-Type -AssemblyName System.Windows.Forms
 
 $projectDir = Split-Path -Parent $PSScriptRoot
 $workbook = Join-Path $projectDir "output\Fiyat-Listesi-Yonetim.xlsx"
+$syncScript = Join-Path $projectDir "scripts\sync_workbook.mjs"
 $siteUrl = "https://furkan58-58.github.io/ogretmen-fiyat-listesi/"
 $gitCandidates = @(
     (Join-Path $env:LOCALAPPDATA "Programs\Git\cmd\git.exe"),
     "C:\Program Files\Git\cmd\git.exe",
     (Join-Path $env:USERPROFILE ".cache\codex-runtimes\codex-primary-runtime\dependencies\native\git\cmd\git.exe")
+)
+$nodeCandidates = @(
+    (Join-Path $env:USERPROFILE ".cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe"),
+    "C:\Program Files\nodejs\node.exe"
 )
 
 function Show-Message([string]$message, [string]$title, $icon) {
@@ -41,13 +46,28 @@ function Run-Git([string[]]$arguments) {
     return ($output | Out-String).Trim()
 }
 
+function Find-Node {
+    $command = Get-Command node.exe -ErrorAction SilentlyContinue
+    if ($command) { return $command.Source }
+    foreach ($candidate in $nodeCandidates) {
+        if (Test-Path -LiteralPath $candidate) { return $candidate }
+    }
+    throw "Guncelleme programi bulunamadi. Codex ile uygulamayi yeniden hazirlayin."
+}
+
 try {
     if (-not (Test-Path -LiteralPath $workbook)) {
         throw "Guncellenecek Excel dosyasi bulunamadi:`n$workbook"
     }
 
     $script:gitExe = Find-Git
+    $nodeExe = Find-Node
     Set-Location -LiteralPath $projectDir
+
+    & $nodeExe $syncScript $workbook
+    if ($LASTEXITCODE -ne 0) {
+        throw "Yayinevi listesi Excel'e eklenemedi. Excel dosyasini kapatip tekrar deneyin."
+    }
 
     Run-Git @("add", "--", "output/Fiyat-Listesi-Yonetim.xlsx") | Out-Null
     & $script:gitExe -c "safe.directory=$($projectDir.Replace('\', '/'))" diff --cached --quiet
