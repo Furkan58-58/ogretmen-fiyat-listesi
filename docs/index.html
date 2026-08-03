@@ -6,15 +6,15 @@
   <title>Öğretmen Fiyat Listeleri</title>
   <meta name="description" content="Kitabevi ve kademeye göre güncel öğretmen kitap fiyatları">
   <link rel="stylesheet" href="assets/style.css">
-  <link rel="stylesheet" href="assets/custom.css">
+  <link rel="stylesheet" href="assets/custom.css?v=18">
 </head>
 <body>
   <header class="hero"><div class="wrap hero-layout"><div class="hero-copy">
-    <p class="eyebrow">2026–2027</p><h1 id="site-title">Öğretmen Fiyat Listeleri</h1>
+    <h1 id="site-title">Öğretmen Fiyat Listeleri</h1>
     <p class="lead" id="site-subtitle">Kitabevini ve kademeyi seçerek güncel listeye ulaşın.</p>
     <div id="catalog-actions" class="actions" hidden><a class="button primary" id="pdf-link" href="#">PDF’yi indir</a><button class="button secondary" id="share">Listeyi paylaş</button></div>
     <div id="contacts" class="contacts"></div><p id="updated" class="updated">Liste hazırlanıyor…</p>
-  </div><div id="catalog-logo" class="catalog-logo" hidden><span>LOGO</span></div></div></header>
+  </div><div id="catalog-brand" class="catalog-brand" hidden><div id="catalog-logo" class="catalog-logo"><span>LOGO</span></div><p class="catalog-year">2026–2027</p><p class="catalog-branch">Sivas Şube</p></div></div></header>
   <main class="wrap main">
     <section id="home-view"><div class="home-heading"><div><p class="kicker">FİYAT LİSTELERİ</p><h2>Kitabevi ve kademeyi seçin</h2></div><p>Her bölümün dersleri, fiyatları, iletişim bilgileri ve PDF dosyası ayrıdır.</p></div><div id="catalogs" class="catalog-grid"></div></section>
     <section id="catalog-view" hidden>
@@ -26,5 +26,5 @@
   </main>
   <dialog id="scanner"><div class="scanner-head"><strong>Barkodu kameraya gösterin</strong><button id="scanner-close" aria-label="Kamerayı kapat">×</button></div><video id="scanner-video" playsinline muted></video><p id="scanner-status">Kamera hazırlanıyor…</p><p class="scanner-help">Barkod net göründüğünde seçili kitabevi ve kademede otomatik aranır.</p></dialog>
   <footer><div class="wrap">Fiyatlar Excel listesinden otomatik hazırlanır. Sipariş öncesinde güncel fiyatı kontrol ediniz.</div></footer>
-  <script src="https://unpkg.com/@zxing/browser@0.1.1" defer></script><script src="assets/app.js" defer></script>
+  <script src="https://unpkg.com/@zxing/browser@0.1.1" defer></script><script src="assets/app.js?v=18" defer></script>
 </body></html>
