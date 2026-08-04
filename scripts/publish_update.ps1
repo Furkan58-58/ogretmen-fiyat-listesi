@@ -77,6 +77,11 @@ try {
     }
 
     Run-Git @("commit", "-m", "Fiyat listesini guncelle") | Out-Null
+
+    # Bu dosyalar GitHub tarafinda Excel'den yeniden uretilir. Bilgisayarda kalan
+    # eski uretim farklari pull --rebase islemini engellememelidir.
+    Run-Git @("restore", "--worktree", "--", "docs/data/products.json", "docs/downloads") | Out-Null
+
     Run-Git @("pull", "--rebase", "origin", "main") | Out-Null
     Run-Git @("push", "origin", "main") | Out-Null
 
