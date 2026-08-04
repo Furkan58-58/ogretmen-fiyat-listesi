@@ -179,15 +179,18 @@ def load_data():
         page["count"] = sum(1 for p in products if p["bookstoreCode"] == page["bookstoreCode"] and p["level"] == page["level"])
         catalogs.append(page)
     catalog_lookup = {f'{item["bookstoreCode"]}|{item["level"]}'.replace(" ", "").casefold(): item for item in catalogs}
+    own_counts = {f'{item["bookstoreCode"]}|{item["level"]}'.replace(" ", "").casefold(): item["count"] for item in catalogs}
     for page in catalogs:
         related_key = clean(page.pop("relatedKey", "")).replace(" ", "").casefold()
         target = catalog_lookup.get(related_key) if related_key and related_key != "yok" else None
         if target is not None and target is not page:
             page["relatedCatalog"] = {
                 "title": target["title"], "url": target["url"], "level": target["level"],
-                "bookstoreName": target["bookstoreName"], "mainColor": target["mainColor"],
+                "bookstoreCode": target["bookstoreCode"], "bookstoreName": target["bookstoreName"], "mainColor": target["mainColor"],
                 "accentColor": target["accentColor"],
             }
+            own_key = f'{page["bookstoreCode"]}|{page["level"]}'.replace(" ", "").casefold()
+            page["count"] = own_counts[own_key] + own_counts[related_key]
     return products, theme, catalogs
 
 
@@ -269,7 +272,10 @@ def main():
     DATA.write_text(json.dumps({"updated": updated, "count": len(products), "theme": theme, "catalogs": catalogs, "products": products}, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     create_pdf(products, updated, theme)
     for catalog in catalogs:
-        catalog_products = [p for p in products if p["bookstoreCode"] == catalog["bookstoreCode"] and p["level"] == catalog["level"]]
+        included = {(catalog["bookstoreCode"], catalog["level"])}
+        if catalog.get("relatedCatalog"):
+            included.add((catalog["relatedCatalog"]["bookstoreCode"], catalog["relatedCatalog"]["level"]))
+        catalog_products = [p for p in products if (p["bookstoreCode"], p["level"]) in included]
         catalog_theme = {"title": catalog["title"], "subtitle": catalog["description"], "mainColor": catalog["mainColor"], "accentColor": catalog["accentColor"]}
         create_pdf(catalog_products, updated, catalog_theme, DOCS / catalog["pdf"])
     print(f"Generated {len(products)} products in {len(catalogs)} catalogs")

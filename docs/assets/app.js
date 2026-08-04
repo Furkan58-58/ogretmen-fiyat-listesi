@@ -50,16 +50,15 @@ function render() {
 }
 
 function openCatalog(catalog) {
-  state.catalog = catalog; state.all = state.data.products.filter((x) => x.bookstoreCode === catalog.bookstoreCode && x.level === catalog.level); state.course = ""; state.kind = "";
+  const included = new Set([`${catalog.bookstoreCode}|${catalog.level}`]);
+  if (catalog.relatedCatalog) included.add(`${catalog.relatedCatalog.bookstoreCode}|${catalog.relatedCatalog.level}`);
+  state.catalog = catalog; state.all = state.data.products.filter((x) => included.has(`${x.bookstoreCode}|${x.level}`)); state.course = ""; state.kind = "";
   document.documentElement.style.setProperty("--navy", catalog.mainColor); document.documentElement.style.setProperty("--navy2", catalog.mainColor); document.documentElement.style.setProperty("--gold", catalog.accentColor);
   $("#site-title").textContent = catalog.title; $("#site-subtitle").textContent = catalog.description; document.title = catalog.title;
   $("#home-view").hidden = true; $("#catalog-view").hidden = false; $("#catalog-actions").hidden = false; $("#pdf-link").href = catalog.pdf;
   $("#updated").textContent = `${catalog.count} ürün • Son güncelleme: ${state.data.updated}`;
   $("#catalog-brand").hidden = false;
   const logo = $("#catalog-logo"); logo.innerHTML = catalog.logo ? `<img src="${catalog.logo}" alt="${catalog.bookstoreName} logosu">` : "<span>LOGO</span>";
-  const related = $("#related-catalog");
-  related.hidden = !catalog.relatedCatalog;
-  related.innerHTML = catalog.relatedCatalog ? `<span>Diğer liste</span><a href="${catalog.relatedCatalog.url}">${catalog.relatedCatalog.title} →</a>` : "";
   $("#contacts").innerHTML = catalog.contacts.map((c) => { const digits = c.phone.replace(/\D/g, ""); const href = c.whatsapp ? `https://wa.me/${digits.startsWith("0") ? `90${digits.slice(1)}` : digits}` : `tel:${digits}`; return `<a class="contact-pill" href="${href}"><span class="contact-icon ${c.whatsapp ? "whatsapp" : ""}">${c.whatsapp ? "WP" : "☎"}</span><span><strong>${c.name || "İletişim"}</strong><small>${c.phone}</small></span></a>`; }).join("");
   renderCourses(); renderPublishers(); renderTypes(); render();
 }
