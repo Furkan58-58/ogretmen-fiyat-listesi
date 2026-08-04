@@ -144,7 +144,8 @@ def load_data():
         return row[index] if index is not None and index < len(row) else None
     products = []
     for row in ws.iter_rows(min_row=2, values_only=True):
-        if not any(row):
+        input_names = ["Barkod", "Yayın", "Sınıf", "Ders", "Genel Tür", "Tür", "Fiyat", "Tanıtım Linki", "Yeni Barkodlar"]
+        if not any(get(row, name) not in (None, "") for name in input_names):
             continue
         publisher = clean(get(row, "Yayın"))
         grade = normalize_grade(get(row, "Sınıf"))
