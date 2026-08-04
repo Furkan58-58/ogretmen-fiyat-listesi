@@ -116,6 +116,7 @@ def load_data():
                 "mainColor": clean(page_value("Ana Renk")) or theme["mainColor"],
                 "accentColor": clean(page_value("Vurgu Rengi")) or theme["accentColor"],
                 "logo": clean(page_value("Logo Linki")),
+                "relatedKey": clean(page_value("Gösterilecek Diğer Liste")),
                 "order": money_value(page_value("Ana Sayfa Sırası")) or 999,
             })
     if not page_rows:
@@ -177,6 +178,16 @@ def load_data():
         page["pdf"] = f'downloads/Fiyat-Listesi-{page["slug"]}.pdf'
         page["count"] = sum(1 for p in products if p["bookstoreCode"] == page["bookstoreCode"] and p["level"] == page["level"])
         catalogs.append(page)
+    catalog_lookup = {f'{item["bookstoreCode"]}|{item["level"]}'.replace(" ", "").casefold(): item for item in catalogs}
+    for page in catalogs:
+        related_key = clean(page.pop("relatedKey", "")).replace(" ", "").casefold()
+        target = catalog_lookup.get(related_key) if related_key and related_key != "yok" else None
+        if target is not None and target is not page:
+            page["relatedCatalog"] = {
+                "title": target["title"], "url": target["url"], "level": target["level"],
+                "bookstoreName": target["bookstoreName"], "mainColor": target["mainColor"],
+                "accentColor": target["accentColor"],
+            }
     return products, theme, catalogs
 
 

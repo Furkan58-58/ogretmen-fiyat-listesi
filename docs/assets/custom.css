@@ -7,6 +7,11 @@
 .catalog-logo img[src*="isler-kitabevi"]{transform:scale(3.7)}
 .catalog-year{margin:12px 0 2px;color:var(--gold);font-size:18px;font-weight:900;letter-spacing:.12em;white-space:nowrap}
 .catalog-branch{margin:0;color:#fff;font-size:15px;font-weight:800;letter-spacing:.06em}
+.related-catalog{display:flex;align-items:center;gap:10px;margin-top:14px;font-size:13px;font-weight:800}
+.related-catalog[hidden]{display:none}
+.related-catalog span{color:#ffffffb8}
+.related-catalog a{display:inline-flex;align-items:center;border:1px solid #ffffff55;border-radius:999px;padding:8px 13px;background:#ffffff14;color:#fff;text-decoration:none}
+.related-catalog a:hover{background:#ffffff25}
 .contact-icon{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#ffffff18;font-size:13px;font-weight:900}
 .contact-icon.whatsapp{background:#25d366;color:#062d16;box-shadow:0 0 0 2px #ffffff26}
 @media(max-width:700px){.hero-layout{align-items:flex-start}.catalog-brand{width:112px;flex-basis:112px}.catalog-logo{width:104px;height:104px;margin:auto;border-radius:16px}.catalog-year{font-size:14px;letter-spacing:.06em}.catalog-branch{font-size:13px}}
