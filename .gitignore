@@ -3,3 +3,15 @@ tmp/
 *.inspect.ndjson
 inspect_workbook.mjs
 output/*-onizleme.png
+
+# Yalnızca bu bilgisayarda kalacak yönetim dosyaları
+app/
+output/
+outputs/
+scripts/
+*.xlsx
+*.exe
+*.cmd
+*.spec
+__pycache__/
+build_workbook.mjs
