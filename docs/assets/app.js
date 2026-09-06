@@ -29,20 +29,20 @@ function renderCourses() {
 }
 
 function renderPublishers() {
-  const select = $("#publisher"), current = select.value, source=state.all.filter((x) => x.course === state.course && (!state.kind || (x.category||x.type||"Diğer")===state.kind));
+  const select = $("#publisher"), current = select.value, source=state.all.filter((x) => x.course === state.course && (!state.kind || (x.type||x.category||"Diğer")===state.kind));
   const publishers = [...new Set(source.map((x) => x.publisher).filter(Boolean))].sort((a, b) => Math.min(...source.filter(x=>x.publisher===a).map(x=>x.publisherOrder??999))-Math.min(...source.filter(x=>x.publisher===b).map(x=>x.publisherOrder??999)) || a.localeCompare(b, "tr"));
   select.innerHTML = '<option value="">Tüm yayınlar</option>'; publishers.forEach((value) => select.add(new Option(value, value))); select.value = publishers.includes(current) ? current : "";
 }
 
 function renderTypes() {
-  const items = state.all.filter((x) => x.course === state.course), types = [...new Set(items.map((x) => x.category || x.type || "Diğer"))].sort((a, b) => Math.min(...items.filter(x=>(x.category||x.type||"Diğer")===a).map(x=>x.typeOrder??999))-Math.min(...items.filter(x=>(x.category||x.type||"Diğer")===b).map(x=>x.typeOrder??999)) || a.localeCompare(b, "tr"));
-  $("#types").innerHTML = [`<button class="type-tab ${state.kind === "" ? "active" : ""}" data-kind="">Tümü</button>`, ...types.map((type) => `<button class="type-tab ${type === state.kind ? "active" : ""}" data-kind="${type}">${type}<small> (${items.filter((x) => (x.category || x.type || "Diğer") === type).length})</small></button>`)].join("");
+  const items = state.all.filter((x) => x.course === state.course), types = [...new Set(items.map((x) => x.type || x.category || "Diğer"))].sort((a, b) => Math.min(...items.filter(x=>(x.type||x.category||"Diğer")===a).map(x=>x.typeOrder??999))-Math.min(...items.filter(x=>(x.type||x.category||"Diğer")===b).map(x=>x.typeOrder??999)) || a.localeCompare(b, "tr"));
+  $("#types").innerHTML = [`<button class="type-tab ${state.kind === "" ? "active" : ""}" data-kind="">Tümü</button>`, ...types.map((type) => `<button class="type-tab ${type === state.kind ? "active" : ""}" data-kind="${type}">${type}<small> (${items.filter((x) => (x.type || x.category || "Diğer") === type).length})</small></button>`)].join("");
   $("#types").querySelectorAll("button").forEach((button) => button.onclick = () => { state.kind = button.dataset.kind; state.scanAllCourses = false; renderTypes(); renderPublishers(); render(); });
 }
 
 function render() {
   const query = norm($("#q").value), publisher = $("#publisher").value;
-  state.shown = state.all.filter((x) => (state.scanAllCourses || x.course === state.course) && (!state.kind || (x.category || x.type || "Diğer") === state.kind) && (!query || norm([x.publisher, x.grade, x.category, x.type, ...(x.barcodes || [x.barcode])].join(" ")).includes(query)) && (!publisher || x.publisher === publisher));
+  state.shown = state.all.filter((x) => (state.scanAllCourses || x.course === state.course) && (!state.kind || (x.type || x.category || "Diğer") === state.kind) && (!query || norm([x.publisher, x.grade, x.category, x.type, ...(x.barcodes || [x.barcode])].join(" ")).includes(query)) && (!publisher || x.publisher === publisher));
   $("#count").textContent = `${state.scanAllCourses ? "Tüm derslerde barkod araması" : (state.course || state.catalog.level)}${state.kind ? ` • ${state.kind}` : ""} • ${state.shown.length} ürün`;
   $("#empty").hidden = state.shown.length > 0;
   const groups = {}; state.shown.forEach((x) => (groups[x.grade || "Diğer"] ??= []).push(x));
