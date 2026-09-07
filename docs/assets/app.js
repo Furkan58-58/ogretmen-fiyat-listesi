@@ -42,8 +42,11 @@ function renderTypes() {
 
 function render() {
   const query = norm($("#q").value), publisher = $("#publisher").value;
-  state.shown = state.all.filter((x) => (state.scanAllCourses || x.course === state.course) && (!state.kind || (x.type || x.category || "Diğer") === state.kind) && (!query || norm([x.publisher, x.grade, x.category, x.type, ...(x.barcodes || [x.barcode])].join(" ")).includes(query)) && (!publisher || x.publisher === publisher));
-  $("#count").textContent = `${state.scanAllCourses ? "Tüm derslerde barkod araması" : (state.course || state.catalog.level)}${state.kind ? ` • ${state.kind}` : ""} • ${state.shown.length} ürün`;
+  const source = state.scanAllCourses
+    ? [...new Map(state.data.products.map((x) => [x.barcode || (x.barcodes || []).join("|"), x])).values()]
+    : state.all;
+  state.shown = source.filter((x) => (state.scanAllCourses || x.course === state.course) && (!state.kind || (x.type || x.category || "Diğer") === state.kind) && (!query || norm([x.publisher, x.grade, x.category, x.type, ...(x.barcodes || [x.barcode])].join(" ")).includes(query)) && (!publisher || x.publisher === publisher));
+  $("#count").textContent = `${state.scanAllCourses ? "Tüm listelerde barkod araması" : (state.course || state.catalog.level)}${state.kind ? ` • ${state.kind}` : ""} • ${state.shown.length} ürün`;
   $("#empty").hidden = state.shown.length > 0;
   const groups = {}; state.shown.forEach((x) => (groups[x.grade || "Diğer"] ??= []).push(x));
   $("#list").innerHTML = Object.entries(groups).sort((a, b) => (gradeOrder.indexOf(a[0]) < 0 ? 99 : gradeOrder.indexOf(a[0])) - (gradeOrder.indexOf(b[0]) < 0 ? 99 : gradeOrder.indexOf(b[0]))).map(([grade, items]) => `<details class="course-group" open><summary><span>${grade}</span><span class="course-count">${items.length} kitap</span></summary><div class="course-cards">${items.map(productCard).join("")}</div></details>`).join("");
